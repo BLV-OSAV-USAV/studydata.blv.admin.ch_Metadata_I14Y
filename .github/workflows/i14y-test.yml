@@ -27,9 +27,11 @@ jobs:
       env:
         CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
         CLIENT_KEY_SECRET: ${{ secrets.CLIENT_KEY_SECRET }}
-        GET_ENDPOINT_FROM: ${{ secrets.GET_ENDPOINT_FROM }}
-        GET_ENDPOINT_TO: ${{ secrets.GET_ENDPOINT_TO }}
-        POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
+        GET_ENDPOINT_FROM: ${{ variables.GET_ENDPOINT_FROM }}
+        GET_ENDPOINT_TO: ${{ variables.GET_ENDPOINT_TO }}
+        POST_ENDPOINT: ${{ variables.POST_ENDPOINT }}
+        URL_TOKEN_NO_REFRESH: ${{ secrets.URL_TOKEN_NO_REFRESH }}
+        URL_TOKEN_REFRESH: ${{ secrets.URL_TOKEN_REFRESH }}
       run: python scripts/i14y-test/harvester.py
 
     - name: Upload log
@@ -37,3 +39,10 @@ jobs:
       with:
         name: harvest-log
         path: harvest_log.txt
+
+    - name: Upload updated data
+      uses: actions/upload-artifact@v4
+      with:
+        name: data-json
+        path: data/data.json
+        retention-days: 1
