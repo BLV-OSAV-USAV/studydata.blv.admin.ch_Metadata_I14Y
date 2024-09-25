@@ -1,0 +1,45 @@
+{
+    "data": {
+        "conceptType": "Date",
+        "conformsTo": [],
+        "description": {
+            "fr": "20240906_harvester_fpl"
+        },
+        "id": "08dcce84-f7ef-72fd-b388-34ddfcba5d6b",
+        "identifier": "20240906_harvester_fpl",
+        "keywords": [],
+        "name": {
+            "fr": "20240906_harvester_fpl modifié"
+        },
+        "pattern": "",
+        "publicationLevel": "Internal",
+        "publisher": {
+            "identifier": "i14y-test-organisation",
+            "name": {
+                "de": "I14Y Test Organisation_de",
+                "en": "I14Y Test Organisation_en",
+                "fr": "I14Y Test Organisation_fr",
+                "it": "I14Y Test Organisation_it",
+                "rm": "I14Y Test Organisation_rm"
+            }
+        },
+        "registrationStatus": "Incomplete",
+        "responsibleDeputy": {
+            "id": "08dbf25e-5786-637c-83e3-b634c378a5e4",
+            "identifier": "max.muster@example.org",
+            "name": "Max Muster",
+            "firstName": "",
+            "lastName": ""
+        },
+        "responsiblePerson": {
+            "id": "08dad75e-cebc-3cc7-9a90-3e4d4b43d962",
+            "identifier": "floriane.pochonlevit@bfs.admin.ch",
+            "name": "Floriane Pochon Levit",
+            "firstName": "",
+            "lastName": ""
+        },
+        "themes": [],
+        "validFrom": "2024-08-31",
+        "version": "1.0.0"
+    }
+}
