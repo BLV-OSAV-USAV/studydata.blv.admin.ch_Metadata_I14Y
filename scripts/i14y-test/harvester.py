@@ -19,10 +19,7 @@ def get_token_without_refresh(client_key,client_key_secret):
     data = {
         'grant_type': 'client_credentials',
     }
-    proxies = {
-    'http': 'http://proxy-bvcol.admin.ch:8080'
-    }
-    response = requests.post(URL_TOKEN_NO_REFRESH, data=data, verify=False, auth=(client_key, client_key_secret), proxies=proxies)
+    response = requests.post(URL_TOKEN_NO_REFRESH, data=data, verify=False, auth=(client_key, client_key_secret))
     return response.json()
 
 # get access token with a refresh token
