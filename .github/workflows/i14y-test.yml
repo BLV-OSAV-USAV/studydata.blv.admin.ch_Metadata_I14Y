@@ -32,6 +32,7 @@ jobs:
         POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
         URL_TOKEN_NO_REFRESH: ${{ secrets.URL_TOKEN_NO_REFRESH }}
         URL_TOKEN_REFRESH: ${{ secrets.URL_TOKEN_REFRESH }}
+        PREVIOUS_TOKEN: ${{ secrets.PREVIOUS_TOKEN }}
       run: python scripts/i14y-test/harvester.py
 
     - name: Upload log
