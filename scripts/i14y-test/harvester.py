@@ -70,12 +70,13 @@ def compare_and_update_data(get_endpoint: str, post_endpoint: str, get_token: st
 if __name__ == "__main__":
 
     repo_root = os.environ.get('GITHUB_WORKSPACE',os.getcwd())
-
+    path_to_data = os.path.join(repo_root, 'scripts/i14y-test/data/data.json')
+        
     # get an access token - to be replaced by getting a refresh token too and save it as a secret
     TOKEN = f"Bearer {get_token_with_refresh(CLIENT_KEY,CLIENT_KEY_SECRET,PREVIOUS_TOKEN)['access_token']}"
 
     # get the data from the harvested endpoint and post any changes
-    compare_and_update_data(GET_ENDPOINT_FROM, POST_ENDPOINT, TOKEN, TOKEN, './data/data.json')
+    compare_and_update_data(GET_ENDPOINT_FROM, POST_ENDPOINT, TOKEN, TOKEN, path_to_data)
 
     # Generate log and save to file
     log = f"Harvest completed at {datetime.now()}\n"
