@@ -90,5 +90,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: data-json
-        path: scripts/i14y-test/data/data.json
+        path: i14y-test/data/data.json
         retention-days: 1
