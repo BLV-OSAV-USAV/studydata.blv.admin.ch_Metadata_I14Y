@@ -46,9 +46,11 @@ def compare_and_update_data(get_endpoint: str, post_endpoint: str, get_token: st
 
 if __name__ == "__main__":
 
-    repo_root = os.environ.get('GITHUB_WORKSPACE',os.getcwd())
-    path_to_data = os.path.join(repo_root, 'scripts/i14y-test/data/data.json')
-
+    #repo_root = os.environ.get('GITHUB_WORKSPACE',os.getcwd())
+    #path_to_data = os.path.join(repo_root, 'scripts/i14y-test/data/data.json')
+    
+    path_to_data = os.path.join('scripts/i14y-test/data/','data.json')
+    
     # get the data from the harvested endpoint and post any changes
     compare_and_update_data(GET_ENDPOINT_FROM, POST_ENDPOINT, ACCESS_TOKEN, ACCESS_TOKEN, path_to_data)
 
