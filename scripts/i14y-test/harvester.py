@@ -8,29 +8,7 @@ from datetime import datetime
 GET_ENDPOINT_FROM = os.environ['GET_ENDPOINT_FROM']
 GET_ENDPOINT_TO = os.environ['GET_ENDPOINT_TO']
 POST_ENDPOINT = os.environ['POST_ENDPOINT']
-#CLIENT_KEY = os.environ['CLIENT_KEY']
-#CLIENT_KEY_SECRET = os.environ['CLIENT_KEY_SECRET']
-#URL_TOKEN_NO_REFRESH = os.environ['URL_TOKEN_NO_REFRESH']
-#URL_TOKEN_REFRESH = os.environ['URL_TOKEN_REFRESH']
-#PREVIOUS_TOKEN = os.environ['PREVIOUS_TOKEN']
 ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
-
-# get access token without a refresh token
-def get_token_without_refresh(client_key,client_key_secret):
-    data = {
-        'grant_type': 'client_credentials',
-    }
-    response = requests.post(URL_TOKEN_NO_REFRESH, data=data, verify=False, auth=(client_key, client_key_secret))
-    return response.json()
-
-# get access token with a refresh token
-def get_token_with_refresh(client_key,client_key_secret, previous_token):
-    data = {
-        'grant_type': 'refresh_token',
-        'refresh_token': previous_token,
-    }
-    response = requests.post(URL_TOKEN_REFRESH, data=data, verify=False, auth=(client_key,client_key_secret))
-    return response.json()
 
 def get_data(endpoint, token):
     response = requests.get(url=endpoint, headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': 'application/+json', 'Accept-encoding': 'json'}, verify=False)
@@ -66,14 +44,10 @@ def compare_and_update_data(get_endpoint: str, post_endpoint: str, get_token: st
             post_data(post_endpoint, data, post_token)
 
 
-
 if __name__ == "__main__":
 
     repo_root = os.environ.get('GITHUB_WORKSPACE',os.getcwd())
     path_to_data = os.path.join(repo_root, 'scripts/i14y-test/data/data.json')
-        
-    # get an access token - to be replaced by getting a refresh token too and save it as a secret
-    #TOKEN = f"Bearer {get_token_with_refresh(CLIENT_KEY,CLIENT_KEY_SECRET,PREVIOUS_TOKEN)['access_token']}"
 
     # get the data from the harvested endpoint and post any changes
     compare_and_update_data(GET_ENDPOINT_FROM, POST_ENDPOINT, ACCESS_TOKEN, ACCESS_TOKEN, path_to_data)
