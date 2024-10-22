@@ -59,8 +59,7 @@ jobs:
             'use_count': use_count
           },f)
         
-        #print(f"::set-output name=access_token::{result['access_token']}")
-        print(f"access_token={result['access_token']}" >> $GITHUB_OUTPUT)
+        print(f"::set-output name=access_token::{result['access_token']}")
         
         if use_count >= 2:
           print("::warning::Refresh token used twice, make a manual refresh")
