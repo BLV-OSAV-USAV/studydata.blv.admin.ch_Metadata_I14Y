@@ -31,7 +31,7 @@ jobs:
         import os
         import json
 
-        def get_token_with_refresh(client_key,client_secret,refresh_token):
+        def get_token_with_refresh(client_key,client_key_secret,refresh_token):
             data = {
                 'grant_type': 'refresh_token',
                 'refresh_token': refresh_token,
