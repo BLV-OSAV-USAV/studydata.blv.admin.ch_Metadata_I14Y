@@ -8,7 +8,7 @@ from datetime import datetime
 GET_ENDPOINT_FROM = os.environ['GET_ENDPOINT_FROM']
 GET_ENDPOINT_TO = os.environ['GET_ENDPOINT_TO']
 POST_ENDPOINT = os.environ['POST_ENDPOINT']
-ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
+ACCESS_TOKEN = f"Bearer {os.environ['ACCESS_TOKEN']}" 
 
 def get_data(endpoint, token):
     response = requests.get(url=endpoint, headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': 'application/+json', 'Accept-encoding': 'json'}, verify=False)
