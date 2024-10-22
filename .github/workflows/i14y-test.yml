@@ -36,7 +36,7 @@ jobs:
                 'grant_type': 'refresh_token',
                 'refresh_token': refresh_token,
             }
-            response = requests.post('${{ secrets.URL_TOKEN_REFRESH }}'', data=data, verify=False, auth=(client_key,client_key_secret))
+            response = requests.post('${{ secrets.URL_TOKEN_REFRESH }}', data=data, verify=False, auth=(client_key,client_key_secret))
             if response.status_code >= 400:
               raise Exception("Failed to get token")
             return response.json()
