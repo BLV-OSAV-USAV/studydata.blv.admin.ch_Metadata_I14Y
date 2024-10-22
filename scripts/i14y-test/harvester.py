@@ -8,12 +8,12 @@ from datetime import datetime
 GET_ENDPOINT_FROM = os.environ['GET_ENDPOINT_FROM']
 GET_ENDPOINT_TO = os.environ['GET_ENDPOINT_TO']
 POST_ENDPOINT = os.environ['POST_ENDPOINT']
-CLIENT_KEY = os.environ['CLIENT_KEY']
-CLIENT_KEY_SECRET = os.environ['CLIENT_KEY_SECRET']
-URL_TOKEN_NO_REFRESH = os.environ['URL_TOKEN_NO_REFRESH']
-URL_TOKEN_REFRESH = os.environ['URL_TOKEN_REFRESH']
-PREVIOUS_TOKEN = os.environ['PREVIOUS_TOKEN']
-
+#CLIENT_KEY = os.environ['CLIENT_KEY']
+#CLIENT_KEY_SECRET = os.environ['CLIENT_KEY_SECRET']
+#URL_TOKEN_NO_REFRESH = os.environ['URL_TOKEN_NO_REFRESH']
+#URL_TOKEN_REFRESH = os.environ['URL_TOKEN_REFRESH']
+#PREVIOUS_TOKEN = os.environ['PREVIOUS_TOKEN']
+ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
 
 # get access token without a refresh token
 def get_token_without_refresh(client_key,client_key_secret):
@@ -73,10 +73,10 @@ if __name__ == "__main__":
     path_to_data = os.path.join(repo_root, 'scripts/i14y-test/data/data.json')
         
     # get an access token - to be replaced by getting a refresh token too and save it as a secret
-    TOKEN = f"Bearer {get_token_with_refresh(CLIENT_KEY,CLIENT_KEY_SECRET,PREVIOUS_TOKEN)['access_token']}"
+    #TOKEN = f"Bearer {get_token_with_refresh(CLIENT_KEY,CLIENT_KEY_SECRET,PREVIOUS_TOKEN)['access_token']}"
 
     # get the data from the harvested endpoint and post any changes
-    compare_and_update_data(GET_ENDPOINT_FROM, POST_ENDPOINT, TOKEN, TOKEN, path_to_data)
+    compare_and_update_data(GET_ENDPOINT_FROM, POST_ENDPOINT, ACCESS_TOKEN, ACCESS_TOKEN, path_to_data)
 
     # Generate log and save to file
     log = f"Harvest completed at {datetime.now()}\n"
