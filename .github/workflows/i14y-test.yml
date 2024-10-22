@@ -83,10 +83,6 @@ jobs:
         name: refresh-token
         path: refresh_token.json
         retention-days: 1
-
-    - name: Clean up
-      if: always()
-      run: rm refresh_token.json
     
     - name: Upload log
       uses: actions/upload-artifact@v4
