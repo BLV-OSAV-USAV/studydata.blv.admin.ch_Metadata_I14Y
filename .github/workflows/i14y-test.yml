@@ -23,6 +23,48 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
+    - name: Get or refresh token
+      id: get-token
+      run: |
+        python - <<EOF
+        import requests
+        import os
+        import json
+
+        def get_token_with_refresh(client_key,client_secret,refresh_token):
+            data = {
+                'grant_type': 'refresh_token',
+                'refresh_token': refresh_token,
+            }
+            response = requests.post('${{ secrets.URL_TOKEN_REFRESH }}'', data=data, verify=False, auth=(client_key,client_key_secret))
+            if response.status_code >= 400:
+              raise Exception("Failed to get token")
+            return response.json()
+        
+        try: 
+          with open('refresh_token.json', 'r') as f:
+            stored_data = json.load(f)
+            refresh_token = stored_data['refresh_token']
+            use_count = stored_data['use_count']
+        except FileNotFoundError:
+          refresh_token = '${{ secrets.INITIAL_REFRESH_TOKEN }}'
+          use_count = 0
+
+        result = get_token_with_refresh('${{ secrets.CLIENT_KEY }}','${{ secrets.CLIENT_KEY_SECRET }}', refresh_token)
+
+        use_count += 1
+        with open('refresh_token.json', 'w') as f:
+          json.dump({
+            'refresh_token': result['refresh_token'],
+            'use_count': use_count
+          })
+        
+        print(f"::set-output name=access_token::{result['access_token']}")
+
+        if use_count >= 2:
+          print("::warning::Refresh token used twice, make a manual refresh")
+        EOF
+
     - name: Run harvester script
       env:
         CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
@@ -30,11 +72,22 @@ jobs:
         GET_ENDPOINT_FROM: ${{ secrets.GET_ENDPOINT_FROM }}
         GET_ENDPOINT_TO: ${{ secrets.GET_ENDPOINT_TO }}
         POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
-        URL_TOKEN_NO_REFRESH: ${{ secrets.URL_TOKEN_NO_REFRESH }}
         URL_TOKEN_REFRESH: ${{ secrets.URL_TOKEN_REFRESH }}
-        PREVIOUS_TOKEN: ${{ secrets.PREVIOUS_TOKEN }}
+        INITIAL_REFRESH_TOKEN: ${{ secrets.INITIAL_REFRESH_TOKEN }}
+        ACCESS_TOKEN: ${{ steps.get-token.outputs.access_token }}
       run: python scripts/i14y-test/harvester.py
 
+    - name: Store refresh token
+      uses: actions/upload-artifact@v4
+      with:
+        name: refresh-token
+        path: refresh_token.json
+        retention-days: 1
+
+    - name: Clean up
+      if: always()
+      run: rm refresh_token.json
+    
     - name: Upload log
       uses: actions/upload-artifact@v4
       with:
