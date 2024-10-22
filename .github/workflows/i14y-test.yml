@@ -59,21 +59,18 @@ jobs:
             'use_count': use_count
           },f)
         
-        print(f"::set-output name=access_token::{result['access_token']}")
-
+        #print(f"::set-output name=access_token::{result['access_token']}")
+        print(f"access_token={result['access_token']}" >> $GITHUB_OUTPUT)
+        
         if use_count >= 2:
           print("::warning::Refresh token used twice, make a manual refresh")
         EOF
 
     - name: Run harvester script
       env:
-        CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
-        CLIENT_KEY_SECRET: ${{ secrets.CLIENT_KEY_SECRET }}
         GET_ENDPOINT_FROM: ${{ secrets.GET_ENDPOINT_FROM }}
         GET_ENDPOINT_TO: ${{ secrets.GET_ENDPOINT_TO }}
         POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
-        URL_TOKEN_REFRESH: ${{ secrets.URL_TOKEN_REFRESH }}
-        INITIAL_REFRESH_TOKEN: ${{ secrets.INITIAL_REFRESH_TOKEN }}
         ACCESS_TOKEN: ${{ steps.get-token.outputs.access_token }}
       run: python scripts/i14y-test/harvester.py
 
@@ -94,5 +91,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: data-json
-        path: data/data.json
+        path: scripts/i14y-test/data/data.json
         retention-days: 1
