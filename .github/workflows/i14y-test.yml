@@ -57,7 +57,7 @@ jobs:
           json.dump({
             'refresh_token': result['refresh_token'],
             'use_count': use_count
-          })
+          },f)
         
         print(f"::set-output name=access_token::{result['access_token']}")
 
