@@ -18,6 +18,13 @@ jobs:
       continue-on-error: true  # first run
       with:
         name: refresh-token
+
+    - name: Download previous data
+      uses: actions/download-artifact@v4
+      continue-on-error: true  # first run
+      with:
+        name: data-json
+        path: i14y-test/data
         
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -56,7 +63,6 @@ jobs:
 
         result = get_token_with_refresh('${{ secrets.CLIENT_KEY }}','${{ secrets.CLIENT_KEY_SECRET }}', refresh_token)
 
-        use_count += 1
         with open('refresh_token.json', 'w') as f:
           json.dump({
             'refresh_token': result['refresh_token'],
