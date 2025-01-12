@@ -55,6 +55,9 @@ jobs:
             return response.json()
         
         try: 
+          print(f"Current directory: {os.getcwd()}")
+          print(f"Directory contents: {os.listdir('.')}")
+          
           with open('refresh_token.json', 'r') as f:
             stored_data = json.load(f)
             refresh_token = stored_data['refresh_token']
