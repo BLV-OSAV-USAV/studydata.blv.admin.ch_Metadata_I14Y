@@ -18,6 +18,7 @@ jobs:
       continue-on-error: true  # first run
       with:
         name: refresh-token
+        path: .  
 
     - name: Download previous data
       uses: actions/download-artifact@v4
@@ -57,6 +58,7 @@ jobs:
         try: 
           print(f"Current directory: {os.getcwd()}")
           print(f"Directory contents: {os.listdir('.')}")
+          print(f"Looking for refresh_token.json in: {os.path.abspath('refresh_token.json')}")
           
           with open('refresh_token.json', 'r') as f:
             stored_data = json.load(f)
