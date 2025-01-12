@@ -22,9 +22,13 @@ jobs:
 
     - name: Debug download
       run: |
-        echo "Download status: ${{ steps.download.outcome }}"
-        echo "Current directory contents:"
+        echo "Download status: ${{ steps.download-token.outcome }}"
+        echo "Direct check for refresh_token.json:"
+        ls -la refresh_token.json || echo "refresh_token.json not found"
+        echo "All files in current directory:"
         ls -la
+        echo "All files in workspace (recursive):"
+        find . -type f
         
     - name: Download previous data
       uses: actions/download-artifact@v4
