@@ -62,24 +62,26 @@ jobs:
             return response.json()
         
         try: 
-          print(f"Current directory: {os.getcwd()}")
-          print(f"Directory contents: {os.listdir('.')}")
-          print(f"Looking for refresh_token.json in: {os.path.abspath('refresh_token.json')}")
-          
-          with open('refresh_token.json', 'r') as f:
-            stored_data = json.load(f)
-            refresh_token = stored_data['refresh_token']
-            print("Using previously stored refresh token")
+            workspace = os.getcwd()
+            token_path = os.path.join(workspace, 'refresh_token.json')
+            print(f"Looking for token at: {token_path}")
+            
+            with open(token_path, 'r') as f:
+                stored_data = json.load(f)
+                refresh_token = stored_data['refresh_token']
+                print("Successfully loaded stored refresh token")
         except FileNotFoundError:
-          refresh_token = '${{ secrets.INITIAL_REFRESH_TOKEN }}'
-          print("Using initial refresh token from secrets")
+            refresh_token = '${{ secrets.INITIAL_REFRESH_TOKEN }}'
+            print("Using initial refresh token")
 
         result = get_token_with_refresh('${{ secrets.CLIENT_KEY }}','${{ secrets.CLIENT_KEY_SECRET }}', refresh_token)
-
-        with open('refresh_token.json', 'w') as f:
-          json.dump({
-            'refresh_token': result['refresh_token'],
-          },f)
+        
+        # Save new token
+        with open(token_path, 'w') as f:
+            json.dump({
+                'refresh_token': result['refresh_token']
+            }, f)
+            print("New refresh token saved")
         
         print(f"::set-output name=access_token::{result['access_token']}")
         EOF
