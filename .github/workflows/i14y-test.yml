@@ -18,17 +18,20 @@ jobs:
       continue-on-error: true  # first run
       with:
         name: refresh-token
-        path: .  
+        path: ./token 
 
-    - name: Debug download
+    - name: Debug and move token
       run: |
-        echo "Download status: ${{ steps.download-token.outcome }}"
-        echo "Direct check for refresh_token.json:"
-        ls -la refresh_token.json || echo "refresh_token.json not found"
-        echo "All files in current directory:"
+        echo "Contents of token directory:"
+        ls -la token || echo "token directory not found"
+        if [ -f token/refresh_token.json ]; then
+          cp token/refresh_token.json .
+          echo "Token file copied to root"
+        else
+          echo "No token file found in download"
+        fi
+        echo "Root directory contents:"
         ls -la
-        echo "All files in workspace (recursive):"
-        find . -type f
         
     - name: Download previous data
       uses: actions/download-artifact@v4
