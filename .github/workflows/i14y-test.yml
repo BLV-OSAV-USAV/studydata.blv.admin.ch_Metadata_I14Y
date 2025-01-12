@@ -58,8 +58,10 @@ jobs:
           with open('refresh_token.json', 'r') as f:
             stored_data = json.load(f)
             refresh_token = stored_data['refresh_token']
+            print("Using previously stored refresh token")
         except FileNotFoundError:
           refresh_token = '${{ secrets.INITIAL_REFRESH_TOKEN }}'
+          print("Using initial refresh token from secrets")
 
         result = get_token_with_refresh('${{ secrets.CLIENT_KEY }}','${{ secrets.CLIENT_KEY_SECRET }}', refresh_token)
 
