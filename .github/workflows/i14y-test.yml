@@ -18,19 +18,17 @@ jobs:
       continue-on-error: true  # first run
       with:
         name: refresh-token
-        path: ./token 
+        path: .
+        github-token: ${{ secrets.GITHUB_TOKEN }}  # Explicit token
+        repository: ${{ github.repository }}       # Explicit repo
+        run-attempt: ${{ github.run_attempt }}     # Current run attempt
 
-    - name: Debug and move token
+    - name: Debug download
       run: |
-        echo "Contents of token directory:"
-        ls -la token || echo "token directory not found"
-        if [ -f token/refresh_token.json ]; then
-          cp token/refresh_token.json .
-          echo "Token file copied to root"
-        else
-          echo "No token file found in download"
-        fi
-        echo "Root directory contents:"
+        echo "Download status: ${{ steps.download-token.outcome }}"
+        echo "Run ID: ${{ github.run_id }}"
+        echo "Run attempt: ${{ github.run_attempt }}"
+        echo "Current directory contents:"
         ls -la
         
     - name: Download previous data
