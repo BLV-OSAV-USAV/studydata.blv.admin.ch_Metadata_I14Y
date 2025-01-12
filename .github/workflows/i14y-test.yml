@@ -27,7 +27,6 @@ jobs:
         name: refresh-token
         workflow: i14y-test.yml  
         workflow_conclusion: success
-        skip_unpack: false
         if_no_artifact_found: warn
         path: .
 
@@ -38,20 +37,15 @@ jobs:
         ls -la
         echo "Looking for refresh_token.json:"
         find . -type f -name "refresh_token.json" || echo "refresh_token.json not found"
-
-    - name: Debug download
-      run: |
-        echo "Download status: ${{ steps.download-token.outcome }}"
-        echo "Current directory contents:"
-        ls -la
-        echo "Looking for refresh_token.json:"
-        find . -type f -name "refresh_token.json" || echo "refresh_token.json not found"
         
     - name: Download previous data
-      uses: actions/download-artifact@v4
-      continue-on-error: true  # first run
+      uses: dawidd6/action-download-artifact@v4
+      continue-on-error: true
       with:
         name: data-json
+        workflow: i14y-test.yml
+        workflow_conclusion: success
+        if_no_artifact_found: warn
         path: i14y-test/data
         
     - name: Set up Python
