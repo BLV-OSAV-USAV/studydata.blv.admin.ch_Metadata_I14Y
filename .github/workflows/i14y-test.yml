@@ -22,6 +22,7 @@ jobs:
 
     - name: Download previous refresh token
       uses: dawidd6/action-download-artifact@v4
+      continue-on-error: true  # first run
       with:
         name: refresh-token
         workflow: i14y-test.yml  
