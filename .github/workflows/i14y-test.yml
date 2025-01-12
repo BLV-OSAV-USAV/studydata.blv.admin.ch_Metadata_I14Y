@@ -13,6 +13,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Download previous refresh token
+      uses: actions/download-artifact@v4
+      continue-on-error: true  # first run
+      with:
+        name: refresh-token
+        
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -45,10 +51,8 @@ jobs:
           with open('refresh_token.json', 'r') as f:
             stored_data = json.load(f)
             refresh_token = stored_data['refresh_token']
-            use_count = stored_data['use_count']
         except FileNotFoundError:
           refresh_token = '${{ secrets.INITIAL_REFRESH_TOKEN }}'
-          use_count = 0
 
         result = get_token_with_refresh('${{ secrets.CLIENT_KEY }}','${{ secrets.CLIENT_KEY_SECRET }}', refresh_token)
 
@@ -56,13 +60,9 @@ jobs:
         with open('refresh_token.json', 'w') as f:
           json.dump({
             'refresh_token': result['refresh_token'],
-            'use_count': use_count
           },f)
         
         print(f"::set-output name=access_token::{result['access_token']}")
-        
-        if use_count >= 2:
-          print("::warning::Refresh token used twice, make a manual refresh")
         EOF
 
     - name: Run harvester script
