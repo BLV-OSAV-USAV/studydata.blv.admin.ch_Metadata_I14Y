@@ -13,23 +13,38 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    #- name: Download previous refresh token
+    #  uses: actions/download-artifact@v4
+    #  continue-on-error: true  # first run
+    #  with:
+    #    name: refresh-token
+    #    path: .
+
     - name: Download previous refresh token
-      uses: actions/download-artifact@v4
-      continue-on-error: true  # first run
+      uses: dawidd6/action-download-artifact@v4
       with:
         name: refresh-token
+        workflow: i14y-test.yml  
+        workflow_conclusion: success
+        skip_unpack: false
+        if_no_artifact_found: warn
         path: .
-        github-token: ${{ secrets.GITHUB_TOKEN }}  # Explicit token
-        repository: ${{ github.repository }}       # Explicit repo
-        run-attempt: ${{ github.run_attempt }}     # Current run attempt
 
     - name: Debug download
       run: |
         echo "Download status: ${{ steps.download-token.outcome }}"
-        echo "Run ID: ${{ github.run_id }}"
-        echo "Run attempt: ${{ github.run_attempt }}"
         echo "Current directory contents:"
         ls -la
+        echo "Looking for refresh_token.json:"
+        find . -type f -name "refresh_token.json" || echo "refresh_token.json not found"
+
+    - name: Debug download
+      run: |
+        echo "Download status: ${{ steps.download-token.outcome }}"
+        echo "Current directory contents:"
+        ls -la
+        echo "Looking for refresh_token.json:"
+        find . -type f -name "refresh_token.json" || echo "refresh_token.json not found"
         
     - name: Download previous data
       uses: actions/download-artifact@v4
