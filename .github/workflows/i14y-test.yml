@@ -20,6 +20,12 @@ jobs:
         name: refresh-token
         path: .  
 
+    - name: Debug download
+      run: |
+        echo "Download status: ${{ steps.download.outcome }}"
+        echo "Current directory contents:"
+        ls -la
+        
     - name: Download previous data
       uses: actions/download-artifact@v4
       continue-on-error: true  # first run
