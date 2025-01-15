@@ -114,7 +114,7 @@ jobs:
       with:
         name: refresh-token
         path: refresh_token.json
-        retention-days: 1
+        retention-days: 2
     
     - name: Upload log
       uses: actions/upload-artifact@v4
@@ -127,4 +127,4 @@ jobs:
       with:
         name: data-json
         path: i14y-test/data/data.json
-        retention-days: 1
+        retention-days: 2
