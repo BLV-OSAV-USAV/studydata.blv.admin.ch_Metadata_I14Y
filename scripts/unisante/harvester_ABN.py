@@ -2,7 +2,7 @@ import requests
 import json
 import os
 import datetime
-from mapping_unisante import map_dataset
+from mapping import map_dataset
 
 GET_ENDPOINT_FROM_UNISANTE = os.environ['GET_ENDPOINT_FROM_UNISANTE']
 PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']
