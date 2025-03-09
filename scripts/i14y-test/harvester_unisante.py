@@ -5,7 +5,7 @@ import datetime
 from mapping_unisante import map_dataset
 
 GET_ENDPOINT_FROM_UNISANTE = os.environ['GET_ENDPOINT_FROM_UNISANTE']
-PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']$
+PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']
 IDS_I14Y = json.loads(os.environ['IDS_I14Y'])
 ACCESS_TOKEN = f"Bearer {os.environ['ACCESS_TOKEN']}" 
 
