@@ -1,13 +1,17 @@
 import requests
 import json
 import os
+import urllib3
 import datetime
+from dateutil import parser
 from mapping import map_dataset
 
 GET_ENDPOINT_FROM_UNISANTE = os.environ['GET_ENDPOINT_FROM_UNISANTE']
 PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']
 IDS_I14Y = json.loads(os.environ['IDS_I14Y'])
 ACCESS_TOKEN = f"Bearer {os.environ['ACCESS_TOKEN']}" 
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def put_data_to_i14y(id, data, token):
     response = requests.put(
