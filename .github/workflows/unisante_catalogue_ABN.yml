@@ -51,7 +51,7 @@ jobs:
         PUT_ENDPOINT_TO_I14Y: ${{ secrets.PUT_ENDPOINT_TO_I14Y }}
         IDS_I14Y: ${{ secrets.IDS_I14Y }}
         ACCESS_TOKEN: ${{ steps.get-token.outputs.access_token }}
-      run: python scripts/i14y-test/harvester_unisante.py
+      run: python scripts/i14y-test/harvester_unisante_ABN.py
     
     - name: Upload log
       uses: actions/upload-artifact@v4
