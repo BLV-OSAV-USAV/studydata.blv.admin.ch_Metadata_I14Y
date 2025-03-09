@@ -9,13 +9,22 @@ PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']
 IDS_I14Y = json.loads(os.environ['IDS_I14Y'])
 ACCESS_TOKEN = f"Bearer {os.environ['ACCESS_TOKEN']}" 
 
-def put_data_to_i14y(endpoint, params, data, token):
-    response = requests.put(endpoint, params=params, data=data, headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, verify=False)
+def put_data_to_i14y(id, data, token):
+    response = requests.put(
+        url = PUT_ENDPOINT_TO_I14Y + id,
+        data=data, 
+        headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, verify=False
+    )
     response.raise_for_status()
     return response.json()
 
-def get_data_from_i14y(endpoint, params, token):
-    response = requests.put(endpoint, params=params, headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, verify=False)
+def change_level_i14y(id, level, token):
+    response = requests.put(
+            url = PUT_ENDPOINT_TO_I14Y + id + '/publication-level',
+            params = {'level': level}, 
+            headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+            verify=False
+        )
     response.raise_for_status()
     return response.json()
 
@@ -42,12 +51,9 @@ if __name__ == "__main__":
                   mapped_dataset = map_dataset(dataset.json())
                   id = IDS_I14Y[identifier]['id']
                   try:
-                    put_data_to_i14y(
-                      endpoint = PUT_ENDPOINT_TO_I14Y,
-                      params = {'id': id},
-                      data = json.dumps(mapped_dataset),
-                      token=ACCESS_TOKEN
-                    )
+                    change_level_public_i14y(id, 'Internal', ACCESS_TOKEN) # do we need this?
+                    put_data_to_i14y(id, json.dumps(mapped_dataset), ACCESS_TOKEN)
+                    change_level_public_i14y(id, 'Public', ACCESS_TOKEN)
             
                   except Exception as e:
                       print(f"Error in update_data: {e}")
