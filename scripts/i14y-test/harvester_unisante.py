@@ -35,14 +35,15 @@ if __name__ == "__main__":
   # Get catalogue from Unisante
     response = s.get(url = GET_ENDPOINT_FROM_UNISANTE + 'search', verify=False, timeout=40.0)
     catalog = response.json()
-  
+
+  # Get yestarday's daate in UTC+1
+    utc_plus_1 = datetime.timezone(datetime.timedelta(hours=1))
+    now_utc_plus_1 = datetime.datetime.now(utc_plus_1)
+    yesterday = now_utc_plus_1 - datetime.timedelta(days=1)
+    
   # Browse datasets in catalogue, check if dataset was updated since yesterday and if so update it on i14y
     for row in catalog['result']['rows']:
-          changed_date  = parser.parse(row['created']) # parse the timestamp as date in UTC+1
-          utc_plus_1 = datetime.timezone(datetime.timedelta(hours=1))
-          now_utc_plus_1 = datetime.datetime.now(utc_plus_1)
-          yesterday = now_utc_plus_1 - datetime.timedelta(days=1)
-    
+          changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
           if changed_date > yesterday:    
             identifier = row['idno']
               dataset = s.get(url = GET_ENDPOINT_FROM_UNISANTE + identifier, verify=False, timeout=40.0)
