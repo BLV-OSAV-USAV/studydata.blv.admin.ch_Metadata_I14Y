@@ -49,6 +49,7 @@ jobs:
       env:
         GET_ENDPOINT_FROM_UNISANTE: ${{ secrets.GET_ENDPOINT_FROM_UNISANTE }}
         PUT_ENDPOINT_TO_I14Y: ${{ secrets.PUT_ENDPOINT_TO_I14Y }}
+        IDS_I14Y: ${{ secrets.IDS_I14Y }}
         ACCESS_TOKEN: ${{ steps.get-token.outputs.access_token }}
       run: python scripts/i14y-test/harvester_unisante.py
     
