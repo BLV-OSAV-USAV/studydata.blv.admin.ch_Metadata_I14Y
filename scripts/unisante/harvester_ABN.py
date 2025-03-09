@@ -65,9 +65,9 @@ if __name__ == "__main__":
                     raise
     
     try:
-        log = f"Harvest completed successfully at {datetime.now()}\n"
+        log = f"Harvest completed successfully at {datetime.datetime.now()}\n"
     except Exception as e:
-        log = f"Harvest failed at {datetime.now()}: {str(e)}\n"
+        log = f"Harvest failed at {datetime.datetime.now()}: {str(e)}\n"
         raise
     finally:
         # Save log in root directory
