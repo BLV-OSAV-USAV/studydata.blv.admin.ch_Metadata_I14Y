@@ -35,7 +35,7 @@ jobs:
             data = {
                 'grant_type': 'client_credentials',
             }
-            response = requests.post('${{ secrets.URL_TOKEN_WITHOUT_REFRESH }}', data=data, verify=False, auth=(client_id,client_secret))
+            response = requests.post('${{ secrets.URL_TOKEN_NO_REFRESH }}', data=data, verify=False, auth=(client_id,client_secret))
             if response.status_code >= 400:
               raise Exception("Failed to get token")
             return response.json()
