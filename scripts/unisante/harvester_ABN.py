@@ -43,22 +43,22 @@ if __name__ == "__main__":
     
   # Browse datasets in catalogue, check if dataset was updated since yesterday and if so update it on i14y
     for row in catalog['result']['rows']:
-          changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
-          if changed_date > yesterday:    
+        changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
+        if changed_date > yesterday:    
             identifier = row['idno']
-              dataset = s.get(url = GET_ENDPOINT_FROM_UNISANTE + identifier, verify=False, timeout=40.0)
-              dataset.raise_for_status()
-              if dataset.status_code < 400:
-                  mapped_dataset = map_dataset(dataset.json())
-                  id = IDS_I14Y[identifier]['id']
-                  try:
-                    change_level_public_i14y(id, 'Internal', ACCESS_TOKEN) # do we need this?
+            dataset = s.get(url = GET_ENDPOINT_FROM_UNISANTE + identifier, verify=False, timeout=40.0)
+            dataset.raise_for_status()
+            if dataset.status_code < 400:
+                mapped_dataset = map_dataset(dataset.json())
+                id = IDS_I14Y[identifier]['id']
+                try:
+                    #change_level_public_i14y(id, 'Internal', ACCESS_TOKEN) # do we need this?
                     put_data_to_i14y(id, json.dumps(mapped_dataset), ACCESS_TOKEN)
-                    change_level_public_i14y(id, 'Public', ACCESS_TOKEN)
-            
-                  except Exception as e:
-                      print(f"Error in update_data: {e}")
-                      raise
+                    #change_level_public_i14y(id, 'Public', ACCESS_TOKEN)
+        
+                except Exception as e:
+                    print(f"Error in update_data: {e}")
+                    raise
     
     try:
         log = f"Harvest completed successfully at {datetime.now()}\n"
