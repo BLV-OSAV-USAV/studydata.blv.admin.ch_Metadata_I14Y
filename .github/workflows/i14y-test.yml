@@ -107,7 +107,7 @@ jobs:
         GET_ENDPOINT_TO: ${{ secrets.GET_ENDPOINT_TO }}
         POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
         ACCESS_TOKEN: ${{ steps.get-token.outputs.access_token }}
-      run: python scripts/i14y-test/harvester.py
+      run: python scripts/i14y-test/harvester_test.py
 
     - name: Store refresh token
       uses: actions/upload-artifact@v4
