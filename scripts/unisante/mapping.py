@@ -25,16 +25,15 @@ def map_dataset(input_data):
           "languages": [],
           "modified": input_data.get("dataset", {}).get("changed"),
           "publisher": {
-            "id": "7fd424b8-0cca-4954-bc80-e889c5c3a510",
-            "identifier": "i14y-test-organisation",
-            "name": {
-              "de": "I14Y Test Organisation_de",
-              "en": "I14Y Test Organisation_en",
-              "fr": "I14Y Test Organisation_fr",
-              "it": "I14Y Test Organisation_it",
-              "rm": "I14Y Test Organisation_rm"
-            }
-          },
+              "id": "f9a1fab2-611d-4e8a-943e-ddd133f982bf",
+              "identifier": "CH_BLV",
+              "name": {
+                "de": "Bundesamt für Lebensmittelsicherheit und Veterinärwesen",
+                "en": "Federal Food Safety and Veterinary Office",
+                "fr": "Office fédéral de la sécurité alimentaire et des affaires vétérinaires",
+                "it": "Ufficio federale della sicurezza alimentare e di veterinaria"
+              }
+            },
           "qualifiedAttributions": [
               {
                 "agent": {
