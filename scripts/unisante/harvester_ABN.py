@@ -10,7 +10,7 @@ from mapping import map_dataset
 GET_ENDPOINT_FROM_UNISANTE = os.environ['GET_ENDPOINT_FROM_UNISANTE']
 PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']
 POST_ENDPOINT_TO_I14Y = os.environ['POST_ENDPOINT_TO_I14Y']
-#IDS_I14Y = json.loads(os.environ['IDS_I14Y'])
+IDS_I14Y = json.loads(os.environ['IDS_I14Y'])
 ACCESS_TOKEN = f"Bearer {os.environ['ACCESS_TOKEN']}" 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -47,17 +47,16 @@ def change_level_i14y(id, level, token):
     response.raise_for_status()
     return response.json()
 
-
-def load_data(file_path: str) -> Dict[str, Any]:
-    try:
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as file:
-                return json.load(file)
-    except (json.JSONDecodeError, IOError) as e:
-        print(f"Error loading data from {file_path}: {e}")
-    return {}
-
-
+def change_status_i14y(id, status, token):
+    response = requests.put(
+            url = PUT_ENDPOINT_TO_I14Y + id + '/registration-status',
+            params = {'status': status}, 
+            headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+            verify=False
+        )
+    response.raise_for_status()
+    return response.json()
+    
 def save_data(data: Dict[str, Any], file_path: str) -> None:
     # Ensure directory exists
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -70,11 +69,16 @@ def save_data(data: Dict[str, Any], file_path: str) -> None:
 
 if __name__ == "__main__":
 
-  # Get repository root directory (harvester/script)
+  # Get repository root directory (harvester/script) and previous saved catalogue data
     workspace = os.getcwd()
     path_to_data = os.path.join(workspace, 'unisante', 'data', 'I14Y_IDS.json')
-    previous_I14Y_IDS = load_data(path_to_data)
-
+    try: 
+        with open(path_to_data, 'r') as f:
+            previous_I14Y_IDS = json.load(f)
+            print("Successfully loaded previous data")
+    except FileNotFoundError:
+            previous_I14Y_IDS = IDS_I14Y
+            print("Using initial data")
     
     s = requests.Session()
 
@@ -105,8 +109,8 @@ if __name__ == "__main__":
                 mapped_dataset = map_dataset(dataset.json())
                 try:
                     post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), ACCESS_TOKEN)
-                    change_level_public_i14y(id, 'Public', ACCESS_TOKEN) # set dataset to public
-                    # set registration status to registered
+                    change_level_i14y(id, 'Public', ACCESS_TOKEN) # set dataset to public
+                    change_status_i14y(id, 'Registered', ACCESS_TOKEN) # set dataset to registered
                     
                     previous_IDS_I14Y[identifier_created] = {'id': post_dataset.json()}
                     IDS_I14Y = json.dumps(previous_IDS_I14Y)
@@ -125,9 +129,7 @@ if __name__ == "__main__":
                 mapped_dataset = map_dataset(dataset.json())
                 id = previous_IDS_I14Y[identifier_updated]['id']
                 try:
-                    #change_level_public_i14y(id, 'Internal', ACCESS_TOKEN)
                     put_data_to_i14y(id, json.dumps(mapped_dataset), ACCESS_TOKEN)
-                    #change_level_public_i14y(id, 'Public', ACCESS_TOKEN)
 
                     IDS_I14Y = previous_IDS_I14Y
                     IDS_I14Y = json.dumps(IDS_I14Y)
