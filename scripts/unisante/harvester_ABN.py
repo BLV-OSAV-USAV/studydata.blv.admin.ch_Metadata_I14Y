@@ -36,20 +36,24 @@ if __name__ == "__main__":
 
     s = requests.Session()
 
-  # Get catalogue from Unisante
+  # Get catalogue 
     response = s.get(url = GET_ENDPOINT_FROM_UNISANTE + 'search', verify=False, timeout=40.0)
     catalog = response.json()
 
-  # Get yestarday's daate in UTC+1
+  # Get yesterday's date in UTC+1
     utc_plus_1 = datetime.timezone(datetime.timedelta(hours=1))
     now_utc_plus_1 = datetime.datetime.now(utc_plus_1)
     yesterday = now_utc_plus_1 - datetime.timedelta(days=1)
+
+    created_datasets = []
+    updated_datasets = []
     
-  # Browse datasets in catalogue, check if dataset was updated since yesterday and if so update it on i14y
+  # Browse datasets in catalogue, check if dataset was created or updated since yesterday, and if so create or update it on i14y
     for row in catalog['result']['rows']:
         changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
         if changed_date > yesterday:    
             identifier = row['idno']
+            updated_datasets.append(identifier)
             dataset = s.get(url = GET_ENDPOINT_FROM_UNISANTE + identifier, verify=False, timeout=40.0)
             dataset.raise_for_status()
             if dataset.status_code < 400:
@@ -63,9 +67,16 @@ if __name__ == "__main__":
                 except Exception as e:
                     print(f"Error in update_data: {e}")
                     raise
-    
+
+    # Create log to upload as artifact
     try:
         log = f"Harvest completed successfully at {datetime.datetime.now()}\n"
+        log += "Created datasets:\n"
+        for item in created_datasets:
+            log += f"\n- {item}"
+        log += "Updated datasets:\n"
+        for item in updated_datasets:
+            log += f"\n- {item}"
     except Exception as e:
         log = f"Harvest failed at {datetime.datetime.now()}: {str(e)}\n"
         raise
