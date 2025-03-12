@@ -17,11 +17,11 @@ jobs:
       uses: dawidd6/action-download-artifact@v4
       continue-on-error: true
       with:
-          name: data-json
+          name: IDS-I14Y-json
           workflow: unisante_catalogue_ABN.yml
           workflow_conclusion: success
           if_no_artifact_found: warn
-          path: unisante_catalogue_ABN/data
+          path: unisante/data
         
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -72,6 +72,6 @@ jobs:
     - name: Upload updated data
       uses: actions/upload-artifact@v4
       with:
-        name: data-json
-        path: unisante_catalogue_ABN/data/data.json
+        name: I14Y_IDS-json
+        path: unisante/data/I14Y_IDS.json
         retention-days: 2
