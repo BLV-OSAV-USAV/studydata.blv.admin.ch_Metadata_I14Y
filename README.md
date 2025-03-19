@@ -1,4 +1,4 @@
-# harvester
+# Harvester
 
 ## Project Structure
 
@@ -6,7 +6,7 @@ For each agent:
 
 - .github/workflows/[agent-workflow].yml: GitHub Actions workflow file for the specific organization and purpose
 - scripts/[agent]/harvester.py: Main Python script for data harvesting
-- scripts/[agent]/data_mapper.py: Python script containing the data mapping function
+- scripts/[agent]/mapping.py: Python script containing the data mapping function
 
 ## Workflow
 
