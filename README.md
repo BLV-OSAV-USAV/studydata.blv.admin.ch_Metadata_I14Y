@@ -1,9 +1,8 @@
-# I14Y Harvester for the FSVO data repo
+# I14Y Harvester for the FSVO data repository
 
 ## Features
 - **Automated harvesting** via scheduled GitHub Actions.
-      - **Pre-configured workflows** for staging (`ABN`) and production (`PROD`) environments.
-- field maaping from DDI to DCAT
+- field mapping from DDI to DCAT
 - script to harvest DDI datasets in json format
 
 ## Configuration 
