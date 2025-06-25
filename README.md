@@ -1,16 +1,51 @@
-# I14Y Harvester
+# I14Y Harvester for the FSVO data repo
 
-## Project Structure
+## Features
+- **Automated harvesting** via scheduled GitHub Actions.
+      - **Pre-configured workflows** for staging (`ABN`) and production (`PROD`) environments.
+- field maaping from DDI to DCAT
+- script to harvest DDI datasets in json format
 
-For each agent:
+## Configuration 
 
-- .github/workflows/[agent-workflow].yml: GitHub Actions workflow file for the specific organization and purpose
-- scripts/[agent]/harvester.py: Main Python script for data harvesting
-- scripts/[agent]/mapping.py: Python script containing the data mapping function
+**Environment Variables** 
+Navigate to your GitHub repository:
+      - Settings → Secrets → Actions
+      - Add the following secrets (provided via encrypted email):
+           - CLIENT_ID_PROD, CLIENT_SECRET_PROD (Production)
+           - CLIENT_ID_ABN, CLIENT_SECRET_ABN (ABN)
+             
+**File Configuration**
+Edit `src/config.py`:
+
+```bash
+PUBLISHER_ID = "your-publisher-id"  # Provided by BFS
+HARVESTER_API_URL = ""  # API endpoint 
+```
 
 ## Workflow
 
-- The frequency at which the workflow runs is defined in the corresponding yml file.
-- It can also be triggered or disabled manually from the Actions tab.
+- The frequency at which the workflow runs is defined in the `.github/workflow` files.
+- To trigger manually, go to GitHub → Actions → [Workflow] → Run Workflow.
 - After each run, a log file is generated and uploaded as an artifact, which can be downloaded from the Actions tab.
 
+## Setting for PROD
+
+To set up the github action workflow fpr PROD, you just need to:
+- uncomment the first line of the script `.github/workflows/harvester_prod.yml` and comment those lines in `.github/workflows/harvester_abn.yml`.
+- chose the PROD API base URL in `src/config.py`
+
+## Repository Structure
+
+```
+harvester_template/
+├── .github/workflows                # GitHub Actions workflows fpr ABN and PROD
+│   ├── harvester_abn.yml
+│   └── harvester_prod.yml
+├── src/ 
+│    ├── config.py                   # Global settings 
+│    ├── harvester.py                # Active harvester
+│    └── field_mapping.py            # DDI to DCAT mapping
+├── requirements.txt                 # Python dependencies 
+└── README.md                        # This file
+```

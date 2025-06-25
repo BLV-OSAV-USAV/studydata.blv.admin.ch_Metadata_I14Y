@@ -5,19 +5,17 @@ import urllib3
 import datetime
 from dateutil import parser
 from typing import Dict, Any
-from mapping import map_dataset
 
-GET_ENDPOINT_FROM_UNISANTE = os.environ['GET_ENDPOINT_FROM_UNISANTE']
-PUT_ENDPOINT_TO_I14Y = os.environ['PUT_ENDPOINT_TO_I14Y']
-POST_ENDPOINT_TO_I14Y = os.environ['POST_ENDPOINT_TO_I14Y']
-IDS_I14Y = json.loads(os.environ['IDS_I14Y'])
-ACCESS_TOKEN = f"Bearer {os.environ['ACCESS_TOKEN']}" 
+import config
+from mapping import get_field_mapping
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def put_data_to_i14y(id, data, token):
+    """Modifiy an exisitng dataset"""
+
     response = requests.put(
-        url = PUT_ENDPOINT_TO_I14Y + id,
+        url = config.API_BASE_URL + 'datasets/' + id,
         data=data, 
         headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
         verify=False
@@ -27,8 +25,10 @@ def put_data_to_i14y(id, data, token):
 
 
 def post_data_to_i14y(data, token):
+    """Import a new dataset"""
+
     response = requests.post(
-        url = POST_ENDPOINT_TO_I14Y,
+        url = config.API_BASE_URL + 'datasets',
         data=data, 
         headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
         verify=False
@@ -38,8 +38,10 @@ def post_data_to_i14y(data, token):
 
 
 def change_level_i14y(id, level, token):
+    """Change the publication level of the dataset"""
+
     response = requests.put(
-            url = PUT_ENDPOINT_TO_I14Y + id + '/publication-level',
+            url = config.API_BASE_URL + 'datasets/' + id + '/publication-level',
             params = {'level': level}, 
             headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
             verify=False
@@ -48,8 +50,10 @@ def change_level_i14y(id, level, token):
     return response.json()
 
 def change_status_i14y(id, status, token):
+    """Change the registration status of the dataset"""
+
     response = requests.put(
-            url = PUT_ENDPOINT_TO_I14Y + id + '/registration-status',
+            url = config.API_BASE_URL + 'datasets/' + id + '/registration-status',
             params = {'status': status}, 
             headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
             verify=False
@@ -58,6 +62,7 @@ def change_status_i14y(id, status, token):
     return response.json()
     
 def save_data(data: Dict[str, Any], file_path: str) -> None:
+
     # Ensure directory exists
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     try:
@@ -68,22 +73,11 @@ def save_data(data: Dict[str, Any], file_path: str) -> None:
 
 
 if __name__ == "__main__":
-
-  # Get repository root directory (harvester/script) and previous saved catalogue data
-    workspace = os.getcwd()
-    path_to_data = os.path.join(workspace, 'unisante', 'data', 'I14Y_IDS.json')
-    try: 
-        with open(path_to_data, 'r') as f:
-            previous_I14Y_IDS = json.load(f)
-            print("Successfully loaded previous data")
-    except FileNotFoundError:
-            previous_I14Y_IDS = IDS_I14Y
-            print("Using initial data")
     
     s = requests.Session()
 
-  # Get catalogue 
-    response = s.get(url = GET_ENDPOINT_FROM_UNISANTE + 'search', verify=False, timeout=40.0)
+  # Get FSVO catalogue 
+    response = s.get(url = config.HARVEST_API_URL + 'search', verify=False, timeout=40.0)
     catalog = response.json()
 
   # Get yesterday's date in UTC+1
@@ -94,46 +88,48 @@ if __name__ == "__main__":
     created_datasets = []
     updated_datasets = []
     
-  # Browse datasets in catalogue, check if dataset was created or updated since yesterday, and if so create or update it on i14y
+  # Browse datasets in catalogue, check if each dataset was created or updated since yesterday, and create or update it on i14y accordingly
     for row in catalog['result']['rows']:
         
         created_date  = parser.parse(row['created']) # parse the timestamp as a date in UTC+1
         changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
         
+        # New dataset
         if created_date > yesterday:
             identifier_created = row['idno']
             created_datasets.append(identifier_created)
-            dataset = s.get(url = GET_ENDPOINT_FROM_UNISANTE + identifier_created, verify=False, timeout=40.0)
+            dataset = s.get(url = config.HARVEST_API_URL + identifier_created, verify=False, timeout=40.0)
             dataset.raise_for_status()
             if dataset.status_code < 400:
-                mapped_dataset = map_dataset(dataset.json())
+                mapped_dataset = get_field_mapping(dataset.json())
                 try:
-                    post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), ACCESS_TOKEN)
-                    change_level_i14y(id, 'Public', ACCESS_TOKEN) # set dataset to public
-                    change_status_i14y(id, 'Registered', ACCESS_TOKEN) # set dataset to registered
-                    
-                    previous_IDS_I14Y[identifier_created] = {'id': post_dataset.json()}
-                    IDS_I14Y = json.dumps(previous_IDS_I14Y)
-                    save_data(IDS_I14Y, path_to_data)
+                    post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), config.ACCESS_TOKEN)
+                    change_level_i14y(id, 'Public', config.ACCESS_TOKEN) # set dataset to public
+                    change_status_i14y(id, 'Registered', config.ACCESS_TOKEN) # set dataset to registered
 
                 except Exception as e:
                     print(f"Error in update_data: {e}")
                     raise
-                    
+
+        # Udpated dataset           
         elif changed_date > yesterday:    
             identifier_updated = row['idno']
             updated_datasets.append(identifier_updated)
-            dataset = s.get(url = GET_ENDPOINT_FROM_UNISANTE + identifier_updated, verify=False, timeout=40.0)
+            dataset = s.get(url = config.HARVEST_API_URL + identifier_updated, verify=False, timeout=40.0)
             dataset.raise_for_status()
             if dataset.status_code < 400:
-                mapped_dataset = map_dataset(dataset.json())
-                id = previous_IDS_I14Y[identifier_updated]['id']
-                try:
-                    put_data_to_i14y(id, json.dumps(mapped_dataset), ACCESS_TOKEN)
+                mapped_dataset = get_field_mapping(dataset.json())
 
-                    IDS_I14Y = previous_IDS_I14Y
-                    IDS_I14Y = json.dumps(IDS_I14Y)
-                    save_data(IDS_I14Y, path_to_data)
+                # get the dataset id
+                i14y_dataset = s.get(
+                    url = config.API_BASE_URL + 'datasets?datasetIdentifier=' + identifier_updated + '&page=1&pageSize=25',
+                    headers={'Authorization': config.ACCESS_TOKEN, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+                    verify=False
+                )
+                id = i14y_dataset.json()['data'][0]['id']
+
+                try:
+                    put_data_to_i14y(id, json.dumps(mapped_dataset), config.ACCESS_TOKEN)
 
                 except Exception as e:
                     print(f"Error in update_data: {e}")

@@ -1,9 +1,12 @@
-def map_dataset(input_data):
+import config
+
+def get_field_mapping(input_data):
+    """Returns the field mapping configuration for a given dataset"""
 
     output_data = {
         "data": {
           "accessRights": {
-            "code": "RESTRICTED"
+            "code": "RESTRICTED" # Hard coded for all datasets
           },
           "conformsTo": [],
           "contactPoints": [],
@@ -25,14 +28,7 @@ def map_dataset(input_data):
           "languages": [],
           "modified": input_data.get("dataset", {}).get("changed"),
           "publisher": {
-              "id": "f9a1fab2-611d-4e8a-943e-ddd133f982bf",
-              "identifier": "CH_BLV",
-              "name": {
-                "de": "Bundesamt für Lebensmittelsicherheit und Veterinärwesen",
-                "en": "Federal Food Safety and Veterinary Office",
-                "fr": "Office fédéral de la sécurité alimentaire et des affaires vétérinaires",
-                "it": "Ufficio federale della sicurezza alimentare e di veterinaria"
-              }
+              "identifier": config.DEFAULT_PUBLISHER,
             },
           "qualifiedAttributions": [
               {
@@ -61,7 +57,7 @@ def map_dataset(input_data):
                 "uri": "http://www.iana.org/assignments/relation/original"
               },
               "relation": {
-                "uri": "https://www.studydata.blv.admin.ch/catalog/4", #input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("data_access", {}).get("dataset_availability", {}).get("access_place_uri"),
+                "uri": input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("data_access", {}).get("dataset_availability", {}).get("access_place_uri"),
                 "label": {}
               }
             }
@@ -91,7 +87,7 @@ def map_dataset(input_data):
     containPerson = False
     for tag in tags:
         if tag['tag'] == 'Humans': containPerson = True
-    if containPerson: output_data["data"]["confidentialityPerson"] = { "code": "person" } # protected person?
+    if containPerson: output_data["data"]["confidentialityPerson"] = { "code": "person" } 
     else: output_data["data"]["confidentialityPerson"] = { "code": "no_person" }
 
     keywords = input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("study_info", {}).get("keywords", [])
@@ -122,9 +118,9 @@ def map_dataset(input_data):
     output_data["data"]["distributions"].append({       
               "accessUrl": {
                 "label": {
-                  "en": "FSVO Data repository" # input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("data_access", {}).get("dataset_availability", {}).get("access_place")
+                  "en": input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("data_access", {}).get("dataset_availability", {}).get("access_place")
                 },
-                "uri": "https://www.studydata.blv.admin.ch/catalog/4" # input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("data_access", {}).get("dataset_availability", {}).get("access_place_uri")
+                "uri": input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("data_access", {}).get("dataset_availability", {}).get("access_place_uri")
               },
               "conformsTo": [],
               "coverage": [],
