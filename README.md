@@ -10,10 +10,11 @@
 
 **Environment Variables** 
 Navigate to your GitHub repository:
-      - Settings → Secrets → Actions
-      - Add the following secrets (provided via encrypted email):
-           - CLIENT_ID_PROD, CLIENT_SECRET_PROD (Production)
-           - CLIENT_ID_ABN, CLIENT_SECRET_ABN (ABN)
+
+- Settings → Secrets → Actions
+- Add the following secrets (provided via encrypted email):
+    - CLIENT_ID_PROD, CLIENT_SECRET_PROD (Production)
+    - CLIENT_ID_ABN, CLIENT_SECRET_ABN (ABN)
              
 **File Configuration**
 Edit `src/config.py`:
