@@ -1,8 +1,8 @@
 name: I14Y Harvester FSVO data repository ABN
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Runs every day at midnight
+  # schedule:
+  #  - cron: '0 0 * * *'  # Runs every day at midnight
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
