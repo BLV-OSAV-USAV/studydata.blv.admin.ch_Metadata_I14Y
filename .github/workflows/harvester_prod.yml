@@ -45,6 +45,8 @@ jobs:
         import os
         import json
 
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         def get_token_without_refresh(client_id,client_secret):
             data = {
                 'grant_type': 'client_credentials',
