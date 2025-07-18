@@ -52,6 +52,7 @@ jobs:
             response = requests.post(
                 "https://identity.bit.admin.ch/realms/bfs-sis-p/protocol/openid-connect/token", 
                 data=data,
+                verify=False,
                 auth=(client_id,client_secret)
               )
 
