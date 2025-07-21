@@ -3,7 +3,7 @@ name: I14Y Harvester FSVO data repository PROD
 on:
 # uncomment the two lines to start automatic harvesting
   #schedule:
-  #  - cron: '0 0 * * *'  # Runs every day at midnight
+  cron: '0 3 * * 1'  # At 03:00 on Monday
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
