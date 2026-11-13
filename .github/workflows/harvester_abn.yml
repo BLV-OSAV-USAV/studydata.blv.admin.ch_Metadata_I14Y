@@ -36,8 +36,8 @@ jobs:
     - name: Get access token
       id: get-token
       env:
-        CLIENT_ID: ${{ secrets.CLIENT_ID}} # client ABN
-        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET}} # secret ABN
+        CLIENT_ID: ${{ secrets.CLIENT_ID_ABN}} # client ABN
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET_ABN}} # secret ABN
       run: |
         python - <<EOF
         import requests
