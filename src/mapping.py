@@ -113,8 +113,10 @@ def get_field_mapping(input_data):
     else: output_data["data"]["confidentialityPerson"] = { "code": "no_person" }
 
     keywords = input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("study_info", {}).get("keywords", [])
-    for keyword in keywords:
-        output_data["data"]["keywords"].append({"en": keyword.get("keyword","")})  
+    for keyword in keywords or []:
+        label = keyword.get("keyword")
+        if isinstance(label, str) and label.strip():
+            output_data["data"]["keywords"].append({"label": {"en": label.strip()}})
 
 
     contacts = input_data.get("dataset", {}).get("metadata", {}).get("study_desc", {}).get("distribution_statement", {}).get("contact", [])
@@ -167,5 +169,17 @@ def get_field_mapping(input_data):
     output_data["data"]["distributions"][0]["coverage"] = [
         coverage.copy() for coverage in output_data["data"]["temporalCoverage"]
     ]
+
+    # Empty multilingual objects fail I14Y validation. Reuse the source
+    # abstract if no distribution-specific description was provided.
+    distribution = output_data["data"]["distributions"][0]
+    descriptions = [distribution["description"].get("en"),
+                    output_data["data"]["description"].get("en")]
+    description = next((text.strip() for text in descriptions
+                        if isinstance(text, str) and text.strip()), None)
+    if description is not None:
+        distribution["description"] = {"en": description}
+    else:
+        del distribution["description"]
 
     return output_data
