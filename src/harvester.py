@@ -105,9 +105,9 @@ if __name__ == "__main__":
             if dataset.status_code < 400:
                 mapped_dataset = get_field_mapping(dataset.json())
                 try:
-                    post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), config.ACCESS_TOKEN)
-                    change_level_i14y(id, 'Public', config.ACCESS_TOKEN) # set dataset to public
-                    change_status_i14y(id, 'Registered', config.ACCESS_TOKEN) # set dataset to registered
+                    post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), config.API_TOKEN)
+                    change_level_i14y(id, 'Public', config.API_TOKEN) # set dataset to public
+                    change_status_i14y(id, 'Registered', config.API_TOKEN) # set dataset to registered
 
                 except Exception as e:
                     print(f"Error in update_data: {e}")
@@ -125,13 +125,13 @@ if __name__ == "__main__":
                 # get the dataset id
                 i14y_dataset = s.get(
                     url = config.API_BASE_URL + 'datasets?datasetIdentifier=' + identifier_updated + '&page=1&pageSize=25',
-                    headers={'Authorization': config.ACCESS_TOKEN, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+                    headers={'Authorization': config.API_TOKEN, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
                     verify=False
                 )
                 id = i14y_dataset.json()['data'][0]['id']
 
                 try:
-                    put_data_to_i14y(id, json.dumps(mapped_dataset), config.ACCESS_TOKEN)
+                    put_data_to_i14y(id, json.dumps(mapped_dataset), config.API_TOKEN)
 
                 except Exception as e:
                     print(f"Error in update_data: {e}")
