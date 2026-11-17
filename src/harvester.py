@@ -16,8 +16,8 @@ def put_data_to_i14y(id, data, token):
 
     response = requests.put(
         url = config.API_BASE_URL + 'datasets/' + id,
-        data=data, 
-        headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+        data=data,
+        headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
         verify=False
     )
     response.raise_for_status()
@@ -29,8 +29,8 @@ def post_data_to_i14y(data, token):
 
     response = requests.post(
         url = config.API_BASE_URL + 'datasets',
-        data=data, 
-        headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+        data=data,
+        headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
         verify=False
     )
     response.raise_for_status()
@@ -42,8 +42,8 @@ def change_level_i14y(id, level, token):
 
     response = requests.put(
             url = config.API_BASE_URL + 'datasets/' + id + '/publication-level',
-            params = {'level': level}, 
-            headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+            params = {'level': level},
+            headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
             verify=False
         )
     response.raise_for_status()
@@ -54,13 +54,13 @@ def change_status_i14y(id, status, token):
 
     response = requests.put(
             url = config.API_BASE_URL + 'datasets/' + id + '/registration-status',
-            params = {'status': status}, 
-            headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'}, 
+            params = {'status': status},
+            headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
             verify=False
         )
     response.raise_for_status()
     return response.json()
-    
+
 def save_data(data: Dict[str, Any], file_path: str) -> None:
 
     # Ensure directory exists
@@ -73,11 +73,12 @@ def save_data(data: Dict[str, Any], file_path: str) -> None:
 
 
 if __name__ == "__main__":
-    
+
     s = requests.Session()
 
-  # Get FSVO catalogue 
+  # Get FSVO catalogue
     response = s.get(url = config.HARVEST_API_URL + 'search', verify=False, timeout=40.0)
+    response.raise_for_status()
     catalog = response.json()
 
   # Get yesterday's date in UTC+1
@@ -90,79 +91,91 @@ if __name__ == "__main__":
     created_datasets = []
     updated_datasets = []
     skipped_datasets = []
-    
-  # Browse datasets in catalogue, check if each dataset was created or updated since yesterday, and create or update it on i14y accordingly
-    for row in catalog['result']['rows']:
-        
-        created_date  = parser.parse(row['created']) # parse the timestamp as a date in UTC+1
-        changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
-        
-        # New dataset
-        if created_date > yesterday:
-            identifier_created = row['idno']
-            created_datasets.append(identifier_created)
-            dataset = s.get(url = config.HARVEST_API_URL + identifier_created, verify=False, timeout=40.0)
-            dataset.raise_for_status()
-            if dataset.status_code < 400:
-                mapped_dataset = get_field_mapping(dataset.json())
-                try:
-                    post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), config.API_TOKEN)
-                    change_level_i14y(id, 'Public', config.API_TOKEN) # set dataset to public
-                    change_status_i14y(id, 'Registered', config.API_TOKEN) # set dataset to registered
+    unchanged_datasets = []
+    rows = catalog['result']['rows']
+    print(f"Katalog: {len(rows)} Datensätze; Stichtag: {yesterday.isoformat()}")
 
-                except Exception as e:
-                    print(f"Error in update_data: {e}")
-                    raise
-
-        # Udpated dataset           
-        elif changed_date > yesterday:    
-            identifier_updated = row['idno']
-            dataset = s.get(url = config.HARVEST_API_URL + identifier_updated, verify=False, timeout=40.0)
-            dataset.raise_for_status()
-            if dataset.status_code < 400:
-                mapped_dataset = get_field_mapping(dataset.json())
-
-                # get the dataset id
-                i14y_dataset = s.get(
-                    url = config.API_BASE_URL + 'datasets',
-                    params = {'datasetIdentifier': identifier_updated, 'page': 1, 'pageSize': 25},
-                    headers={'Authorization': config.API_TOKEN, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
-                    verify=False
-                )
-                i14y_dataset.raise_for_status()
-                matches = i14y_dataset.json()['data']
-                if not matches:
-                    print(f"Skipping {identifier_updated}: no matching dataset found in I14Y.")
-                    skipped_datasets.append(identifier_updated)
-                    continue
-                if len(matches) > 1:
-                    raise ValueError(f"Multiple I14Y datasets found for {identifier_updated}; cannot choose an update target.")
-                id = matches[0]['id']
-
-                try:
-                    put_data_to_i14y(id, json.dumps(mapped_dataset), config.API_TOKEN)
-                    updated_datasets.append(identifier_updated)
-
-                except Exception as e:
-                    print(f"Error in update_data: {e}")
-                    raise
-
-    # Create log to upload as artifact
     try:
-        log = f"Harvest completed successfully at {datetime.datetime.now()}\n"
-        log += "Created datasets:\n"
-        for item in created_datasets:
-            log += f"\n- {item}"
-        log += "Updated datasets:\n"
-        for item in updated_datasets:
-            log += f"\n- {item}"
-        log += "\nSkipped datasets (no matching dataset in I14Y):\n"
-        for item in skipped_datasets:
-            log += f"\n- {item}"
-    except Exception as e:
-        log = f"Harvest failed at {datetime.datetime.now()}: {str(e)}\n"
-        raise
+      # Browse datasets in catalogue, check if each dataset was created or updated since yesterday, and create or update it on i14y accordingly
+        for row in rows:
+
+            created_date  = parser.parse(row['created']) # parse the timestamp as a date in UTC+1
+            changed_date  = parser.parse(row['changed']) # parse the timestamp as a date in UTC+1
+
+            print(f"Prüfe {row['idno']}: erstellt={row['created']}, geändert={row['changed']}")
+
+            # New dataset
+            if created_date > yesterday:
+                identifier_created = row['idno']
+                dataset = s.get(url = config.HARVEST_API_URL + identifier_created, verify=False, timeout=40.0)
+                dataset.raise_for_status()
+                if dataset.status_code < 400:
+                    mapped_dataset = get_field_mapping(dataset.json())
+                    try:
+                        post_dataset = post_data_to_i14y(json.dumps(mapped_dataset), config.API_TOKEN)
+                        created_datasets.append(identifier_created)
+                        print(f"Auf I14Y erstellt: {identifier_created}")
+                        change_level_i14y(id, 'Public', config.API_TOKEN) # set dataset to public
+                        change_status_i14y(id, 'Registered', config.API_TOKEN) # set dataset to registered
+
+                    except Exception as e:
+                        print(f"Error in update_data: {e}")
+                        raise
+
+            # Udpated dataset
+            elif changed_date > yesterday:
+                identifier_updated = row['idno']
+                dataset = s.get(url = config.HARVEST_API_URL + identifier_updated, verify=False, timeout=40.0)
+                dataset.raise_for_status()
+                if dataset.status_code < 400:
+                    mapped_dataset = get_field_mapping(dataset.json())
+
+                    # get the dataset id
+                    i14y_dataset = s.get(
+                        url = config.API_BASE_URL + 'datasets',
+                        params = {'datasetIdentifier': identifier_updated, 'page': 1, 'pageSize': 25},
+                        headers={'Authorization': config.API_TOKEN, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
+                        verify=False
+                    )
+                    i14y_dataset.raise_for_status()
+                    matches = i14y_dataset.json()['data']
+                    if not matches:
+                        print(f"Skipping {identifier_updated}: no matching dataset found in I14Y.")
+                        skipped_datasets.append(identifier_updated)
+                        continue
+                    if len(matches) > 1:
+                        raise ValueError(f"Multiple I14Y datasets found for {identifier_updated}; cannot choose an update target.")
+                    id = matches[0]['id']
+
+                    try:
+                        put_data_to_i14y(id, json.dumps(mapped_dataset), config.API_TOKEN)
+                        updated_datasets.append(identifier_updated)
+                        print(f"Auf I14Y aktualisiert: {identifier_updated} (I14Y-ID: {id})")
+
+                    except Exception as e:
+                        print(f"Error in update_data: {e}")
+                        raise
+
+            else:
+                unchanged_datasets.append(row['idno'])
+                print(f"Übersprungen: {row['idno']} – seit dem Stichtag weder erstellt noch geändert.")
+
     finally:
-        # Save log in root directory
+        # Print the same report that is uploaded as an artifact.
+        sections = [
+            ("Auf I14Y erstellt", created_datasets),
+            ("Auf I14Y aktualisiert", updated_datasets),
+            ("Übersprungen: kein Treffer auf I14Y", skipped_datasets),
+            ("Übersprungen: seit Stichtag unverändert", unchanged_datasets),
+        ]
+        lines = [
+            f"Katalog: {len(rows)} Datensätze; Stichtag: {yesterday.isoformat()}",
+            f"Auf I14Y geladen: {len(created_datasets) + len(updated_datasets)}",
+        ]
+        for label, identifiers in sections:
+            lines.append(f"\n{label} ({len(identifiers)}):")
+            lines.extend(f"- {identifier}" for identifier in identifiers)
+        log = "\n".join(lines) + "\n"
+        print(log)
         with open('harvest_log.txt', 'w') as f:
             f.write(log)
