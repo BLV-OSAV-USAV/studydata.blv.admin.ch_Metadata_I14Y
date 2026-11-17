@@ -64,6 +64,21 @@ def find_i14y_dataset(session, identifier):
     return matches[0] if matches else None
 
 
+def already_has_i14y_state(response, field, value):
+    """Recognize only an explicit already-at-target 405, including forwarded errors."""
+    if response.status_code != 405:
+        return False
+    try:
+        problem = json.loads(response.text)
+        detail = problem.get('detail', '')
+        if 'Response:' in detail:
+            forwarded = json.loads(detail.split('Response:', 1)[1].strip())
+            detail = forwarded.get('detail', '')
+        return detail == f"The resource already has its {field} set to '{value}'."
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
 def change_level_i14y(id, level, token):
     """Change the publication level of the dataset"""
 
@@ -73,6 +88,9 @@ def change_level_i14y(id, level, token):
             headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
             verify=False
         )
+    if already_has_i14y_state(response, 'publication level', level):
+        print(f"I14Y {id}: Publikationsstufe ist bereits {level}.")
+        return
     raise_for_i14y_status(response)
 
 def change_status_i14y(id, status, token):
@@ -84,13 +102,19 @@ def change_status_i14y(id, status, token):
             headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
             verify=False
         )
+    if already_has_i14y_state(response, 'registration status', status):
+        print(f"I14Y {id}: Registrierungsstatus ist bereits {status}.")
+        return
     raise_for_i14y_status(response)
 
 
-def publish_and_register_i14y(dataset_id):
+def publish_and_register_i14y(dataset_id, current=None):
     """Also complete publication after a previous, partially successful run."""
-    change_level_i14y(dataset_id, 'Public', config.API_TOKEN)
-    change_status_i14y(dataset_id, 'Registered', config.API_TOKEN)
+    current = current or {}
+    if current.get('publicationLevel') != 'Public':
+        change_level_i14y(dataset_id, 'Public', config.API_TOKEN)
+    if current.get('registrationStatus') != 'Recorded':
+        change_status_i14y(dataset_id, 'Recorded', config.API_TOKEN)
 
 def save_data(data: Dict[str, Any], file_path: str) -> None:
 
@@ -136,7 +160,7 @@ if __name__ == "__main__":
             # Check existence even for source datasets older than the cutoff.
             target = find_i14y_dataset(s, identifier)
             if target is not None and max(created_date, changed_date) <= yesterday:
-                publish_and_register_i14y(target['id'])
+                publish_and_register_i14y(target['id'], target)
                 unchanged_datasets.append(identifier)
                 print(f"Bereits auf I14Y vorhanden und unverändert: {identifier} (I14Y-ID: {target['id']})")
                 continue
@@ -156,7 +180,7 @@ if __name__ == "__main__":
                 put_data_to_i14y(target['id'], payload, config.API_TOKEN)
                 updated_datasets.append(identifier)
                 print(f"Auf I14Y aktualisiert: {identifier} (I14Y-ID: {target['id']})")
-            publish_and_register_i14y(target['id'])
+            publish_and_register_i14y(target['id'], target)
             print(f"Auf I14Y publiziert und registriert: {identifier} (I14Y-ID: {target['id']})")
 
     except Exception as error:
