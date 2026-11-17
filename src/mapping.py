@@ -9,6 +9,9 @@ def coverage_timestamp(value, *, end=False):
     if value is None or (isinstance(value, str) and not value.strip()):
         return None
     text = str(value).strip()
+    # The source catalogue also uses year-first dates with slash separators.
+    if re.fullmatch(r"\d{4}/\d{2}(?:/\d{2})?", text):
+        text = text.replace('/', '-')
     if re.fullmatch(r"\d{4}(?:-\d{2})?", text):
         parts = text.split('-')
         year = int(parts[0])
