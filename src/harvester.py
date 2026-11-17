@@ -89,6 +89,7 @@ if __name__ == "__main__":
 
     created_datasets = []
     updated_datasets = []
+    skipped_datasets = []
     
   # Browse datasets in catalogue, check if each dataset was created or updated since yesterday, and create or update it on i14y accordingly
     for row in catalog['result']['rows']:
@@ -116,7 +117,6 @@ if __name__ == "__main__":
         # Udpated dataset           
         elif changed_date > yesterday:    
             identifier_updated = row['idno']
-            updated_datasets.append(identifier_updated)
             dataset = s.get(url = config.HARVEST_API_URL + identifier_updated, verify=False, timeout=40.0)
             dataset.raise_for_status()
             if dataset.status_code < 400:
@@ -124,14 +124,24 @@ if __name__ == "__main__":
 
                 # get the dataset id
                 i14y_dataset = s.get(
-                    url = config.API_BASE_URL + 'datasets?datasetIdentifier=' + identifier_updated + '&page=1&pageSize=25',
+                    url = config.API_BASE_URL + 'datasets',
+                    params = {'datasetIdentifier': identifier_updated, 'page': 1, 'pageSize': 25},
                     headers={'Authorization': config.API_TOKEN, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
                     verify=False
                 )
-                id = i14y_dataset.json()['data'][0]['id']
+                i14y_dataset.raise_for_status()
+                matches = i14y_dataset.json()['data']
+                if not matches:
+                    print(f"Skipping {identifier_updated}: no matching dataset found in I14Y.")
+                    skipped_datasets.append(identifier_updated)
+                    continue
+                if len(matches) > 1:
+                    raise ValueError(f"Multiple I14Y datasets found for {identifier_updated}; cannot choose an update target.")
+                id = matches[0]['id']
 
                 try:
                     put_data_to_i14y(id, json.dumps(mapped_dataset), config.API_TOKEN)
+                    updated_datasets.append(identifier_updated)
 
                 except Exception as e:
                     print(f"Error in update_data: {e}")
@@ -145,6 +155,9 @@ if __name__ == "__main__":
             log += f"\n- {item}"
         log += "Updated datasets:\n"
         for item in updated_datasets:
+            log += f"\n- {item}"
+        log += "\nSkipped datasets (no matching dataset in I14Y):\n"
+        for item in skipped_datasets:
             log += f"\n- {item}"
     except Exception as e:
         log = f"Harvest failed at {datetime.datetime.now()}: {str(e)}\n"
