@@ -34,7 +34,6 @@ def put_data_to_i14y(id, data, token):
         verify=False
     )
     raise_for_i14y_status(response)
-    return response.json()
 
 
 def post_data_to_i14y(data, token):
@@ -47,7 +46,6 @@ def post_data_to_i14y(data, token):
         verify=False
     )
     raise_for_i14y_status(response)
-    return response.json()
 
 
 def find_i14y_dataset(session, identifier):
@@ -75,8 +73,7 @@ def change_level_i14y(id, level, token):
             headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
             verify=False
         )
-    response.raise_for_status()
-    return response.json()
+    raise_for_i14y_status(response)
 
 def change_status_i14y(id, status, token):
     """Change the registration status of the dataset"""
@@ -87,8 +84,13 @@ def change_status_i14y(id, status, token):
             headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
             verify=False
         )
-    response.raise_for_status()
-    return response.json()
+    raise_for_i14y_status(response)
+
+
+def publish_and_register_i14y(dataset_id):
+    """Also complete publication after a previous, partially successful run."""
+    change_level_i14y(dataset_id, 'Public', config.API_TOKEN)
+    change_status_i14y(dataset_id, 'Registered', config.API_TOKEN)
 
 def save_data(data: Dict[str, Any], file_path: str) -> None:
 
@@ -134,6 +136,7 @@ if __name__ == "__main__":
             # Check existence even for source datasets older than the cutoff.
             target = find_i14y_dataset(s, identifier)
             if target is not None and max(created_date, changed_date) <= yesterday:
+                publish_and_register_i14y(target['id'])
                 unchanged_datasets.append(identifier)
                 print(f"Bereits auf I14Y vorhanden und unverändert: {identifier} (I14Y-ID: {target['id']})")
                 continue
@@ -149,12 +152,12 @@ if __name__ == "__main__":
                 target = find_i14y_dataset(s, identifier)
                 if target is None:
                     raise RuntimeError(f"{identifier} wurde erstellt, ist aber noch nicht auffindbar; Publikation und Registrierung konnten nicht gesetzt werden.")
-                change_level_i14y(target['id'], 'Public', config.API_TOKEN)
-                change_status_i14y(target['id'], 'Registered', config.API_TOKEN)
             else:
                 put_data_to_i14y(target['id'], payload, config.API_TOKEN)
                 updated_datasets.append(identifier)
                 print(f"Auf I14Y aktualisiert: {identifier} (I14Y-ID: {target['id']})")
+            publish_and_register_i14y(target['id'])
+            print(f"Auf I14Y publiziert und registriert: {identifier} (I14Y-ID: {target['id']})")
 
     except Exception as error:
         failure = f"Fehler bei {identifier}: {error}"
