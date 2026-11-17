@@ -139,9 +139,7 @@ if __name__ == "__main__":
   # Get yesterday's date in UTC+1
     utc_plus_1 = datetime.timezone(datetime.timedelta(hours=1))
     now_utc_plus_1 = datetime.datetime.now(utc_plus_1)
-    #yesterday = now_utc_plus_1 - datetime.timedelta(days=1)
-
-    yesterday = datetime.datetime(2026, 2, 16, 0, 0, tzinfo=utc_plus_1)
+    yesterday = now_utc_plus_1 - datetime.timedelta(days=31)
 
     created_datasets = []
     updated_datasets = []
