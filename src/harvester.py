@@ -11,6 +11,19 @@ from mapping import get_field_mapping
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+def raise_for_i14y_status(response):
+    """Include the API validation response in failures, without request headers."""
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as error:
+        detail = response.text.replace(config.API_TOKEN, '[REDACTED]')
+        raw_token = config.API_TOKEN.removeprefix('Bearer ')
+        if raw_token:
+            detail = detail.replace(raw_token, '[REDACTED]')
+        raise requests.exceptions.HTTPError(
+            f"{error}\nI14Y-Antwort: {detail}", response=response
+        ) from error
+
 def put_data_to_i14y(id, data, token):
     """Modifiy an exisitng dataset"""
 
@@ -20,7 +33,7 @@ def put_data_to_i14y(id, data, token):
         headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
         verify=False
     )
-    response.raise_for_status()
+    raise_for_i14y_status(response)
     return response.json()
 
 
@@ -33,7 +46,7 @@ def post_data_to_i14y(data, token):
         headers={'Authorization': token, 'Content-Type': 'application/json', 'Accept': '*/*','Accept-encoding': 'json'},
         verify=False
     )
-    response.raise_for_status()
+    raise_for_i14y_status(response)
     return response.json()
 
 
@@ -107,6 +120,7 @@ if __name__ == "__main__":
     created_datasets = []
     updated_datasets = []
     unchanged_datasets = []
+    failure = None
     rows = catalog['result']['rows']
     print(f"Katalog: {len(rows)} Datensätze; Stichtag: {yesterday.isoformat()}")
 
@@ -142,6 +156,9 @@ if __name__ == "__main__":
                 updated_datasets.append(identifier)
                 print(f"Auf I14Y aktualisiert: {identifier} (I14Y-ID: {target['id']})")
 
+    except Exception as error:
+        failure = f"Fehler bei {identifier}: {error}"
+        raise
     finally:
         # Print the same report that is uploaded as an artifact.
         sections = [
@@ -150,9 +167,12 @@ if __name__ == "__main__":
             ("Bereits auf I14Y vorhanden und unverändert", unchanged_datasets),
         ]
         lines = [
+            "Harvest fehlgeschlagen" if failure else "Harvest abgeschlossen",
             f"Katalog: {len(rows)} Datensätze; Stichtag: {yesterday.isoformat()}",
             f"Auf I14Y geladen: {len(created_datasets) + len(updated_datasets)}",
         ]
+        if failure:
+            lines.append(failure)
         for label, identifiers in sections:
             lines.append(f"\n{label} ({len(identifiers)}):")
             lines.extend(f"- {identifier}" for identifier in identifiers)

@@ -27,9 +27,7 @@ def get_field_mapping(input_data):
             ],      
           "languages": [],
           "modified": input_data.get("dataset", {}).get("changed"),
-          "publisher": {
-              "identifier": config.DEFAULT_PUBLISHER,
-            },
+          "publisher": config.DEFAULT_PUBLISHER.copy(),
           "qualifiedAttributions": [
               {
                 "agent": {
